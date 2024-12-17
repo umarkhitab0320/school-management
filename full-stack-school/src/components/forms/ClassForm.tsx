@@ -73,6 +73,8 @@ const ClassForm = ({
       </h1>
 
       <div className="flex justify-between flex-wrap gap-4">
+     
+
         <InputField
           label="Class name"
           name="name"
