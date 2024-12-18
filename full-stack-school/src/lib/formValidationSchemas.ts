@@ -50,22 +50,27 @@ export type TeacherSchema = z.infer<typeof teacherSchema>;
 export let studentSchema= z.object({
   id: z.coerce.string().optional(),
   username:z.string().min(1,"username is required!").toLowerCase(),
-  name:z.string().optional(),
-  surname:z.string().optional(),
+  name:z.string().min(1,{message:"first name is required!"}),
+  surname:z.string().min(1,{message:"last name is required!"}),
   email: z
   .string()
-  .email({ message: "Invalid email address!" })
+  .email().min(1,{ message: "Invalid email address!" })
+  .optional()
+  .or(z.literal('')),
+  password: z
+  .string().min(1,{ message: "password is required!" })
   .optional()
   .or(z.literal("")),
   phone:z.string().optional(),
-  address:z.string().optional(),
+  address:z.string().min(1,{message:'address is required!'}),
   img:z.string().optional(),
-  bloodType:z.string().min(1,"bloodtype is required"),
-  sex:z.enum(["MALE","FEMALE"],{message:"sex is required"}),
-  parentId:z.string().optional(),
-  classId:z.number().optional(),
-  gradeId:z.number().optional(),
+  bloodType:z.string().min(1,"bloodtype is required!"),
+  sex:z.enum(["MALE","FEMALE"],{message:"sex is required!"}),
+  parentId:z.string().min(1,{message:"parentId is required"}),
+  classId:z.coerce.number().min(1,{message:"classId is required"}),
+  gradeId:z.coerce.number().min(1,{message:"gradeId is required"}),
+  birthday:z.coerce.date({message:"birthday is required!"}),
 
 
 })
-export type StudenSchema=z.infer<typeof teacherSchema>
+export type StudenSchema=z.infer<typeof studentSchema>

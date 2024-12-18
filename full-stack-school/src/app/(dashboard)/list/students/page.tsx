@@ -19,7 +19,7 @@ const StudentListPage = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
   const { sessionClaims } = await auth();
-  const role = (sessionClaims?.metaData as { role?: string })?.role;
+  const role = (sessionClaims?.metaData as { role?: string })?.role ;
 
   const columns = [
     {
@@ -86,9 +86,7 @@ const StudentListPage = async ({
             </button>
           </Link>
           {role === "admin" && (
-            // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaPurple">
-            //   <Image src="/delete.png" alt="" width={16} height={16} />
-            // </button>
+           
             <FormContainer table="student" type="delete" id={item.id} />
           )}
         </div>

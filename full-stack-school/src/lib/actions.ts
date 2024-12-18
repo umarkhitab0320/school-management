@@ -1,10 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+
 import {
   ClassSchema,
-  ExamSchema,
-  StudentSchema,
+  StudenSchema,
+  // ExamSchema,
+  // StudentSchema,
   SubjectSchema,
   TeacherSchema,
 } from "./formValidationSchemas";
@@ -250,3 +253,72 @@ export const deleteTeacher = async (
   }
 };
 
+
+export let createStudent = async (
+  currentState: CurrentState,
+  data: StudenSchema
+) => {
+  try {
+    let client = await clerkClient();
+    let user = await client.users.createUser({
+      username:data.username,
+      firstName: data.name,
+      lastName: data.surname,
+      password: data.password,
+      publicMetadata: { role: 'student' },
+    });
+
+    await prisma.student.create({
+      data: {
+        id: user.id,
+        username: data.username,
+        name: data.name,
+        surname: data.surname,
+        email: data.email || null,
+        phone: data.phone || null,
+        address: data.address,
+        img: data.img || null,
+        bloodType: data.bloodType,
+        sex: data.sex,
+        parentId: data.parentId,
+        classId: data.classId,
+        gradeId: data.gradeId,
+        birthday: data.birthday,
+      },
+    });
+
+    return { success: true, error: false };
+  } catch (error: any) {
+    // Handle Prisma errors based on their codes
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        // Unique constraint violation
+        console.log('A unique constraint was violated (e.g., username or email already exists')
+        return {
+          success: false,
+          error: true,
+          message: 'A unique constraint was violated (e.g., username or email already exists).',
+          meta: error.meta, // Contains details about which field violated the constraint
+        };
+      }
+      if (error.code === 'P2003') {
+        // Foreign key constraint violation
+        console.log("'message: 'A foreign key constraint was violated (e.g., parentId, classId, or gradeId)")
+        return {
+          success: false,
+          error: true,
+          message: 'A foreign key constraint was violated (e.g., parentId, classId, or gradeId).',
+          meta: error.meta,
+        };
+      }
+      // Handle other known Prisma errors
+    }
+console.log("An unknown error occurred.")
+    // Handle generic errors (e.g., from Clerk or other parts of the code)
+    return {
+      success: false,
+      error: true,
+      message: error.message || 'An unknown error occurred.',
+    };
+  }
+};

@@ -9,9 +9,11 @@ const StudentAttendanceCard = async ({ id }: { id: string }) => {
       },
     },
   });
-
+  
   const totalDays = attendance.length;
   const presentDays = attendance.filter((day) => day.present).length;
+  console.log('presentDays',presentDays)
+ 
   const percentage = (presentDays / totalDays) * 100;
   return (
     <div className="">
