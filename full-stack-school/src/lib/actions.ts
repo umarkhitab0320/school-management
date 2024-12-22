@@ -5,6 +5,7 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 import {
   ClassSchema,
+  ExamSchema,
   StudenSchema,
   // ExamSchema,
   // StudentSchema,
@@ -146,12 +147,12 @@ export const createTeacher = async (
 ) => {
   try {
     const client = await clerkClient()
-   let user= await client.users.createUser({
+    let user = await client.users.createUser({
       username: data.username,
       password: data.password,
       firstName: data.name,
       lastName: data.surname,
-      publicMetadata:{role:"teacher"}
+      publicMetadata: { role: "teacher" }
     });
 
     await prisma.teacher.create({
@@ -191,8 +192,8 @@ export const updateTeacher = async (
     return { success: false, error: true };
   }
   try {
-    const client=await clerkClient()
-     await client.users.updateUser(data.id, {
+    const client = await clerkClient()
+    await client.users.updateUser(data.id, {
       username: data.username,
       ...(data.password !== "" && { password: data.password }),
       firstName: data.name,
@@ -236,7 +237,7 @@ export const deleteTeacher = async (
 ) => {
   const id = data.get("id") as string;
   try {
-    const client=await clerkClient()
+    const client = await clerkClient()
     client.users.deleteUser(id);
 
     await prisma.teacher.delete({
@@ -261,7 +262,7 @@ export let createStudent = async (
   try {
     let client = await clerkClient();
     let user = await client.users.createUser({
-      username:data.username,
+      username: data.username,
       firstName: data.name,
       lastName: data.surname,
       password: data.password,
@@ -313,7 +314,7 @@ export let createStudent = async (
       }
       // Handle other known Prisma errors
     }
-console.log("An unknown error occurred.")
+    console.log("An unknown error occurred.")
     // Handle generic errors (e.g., from Clerk or other parts of the code)
     return {
       success: false,
@@ -322,3 +323,89 @@ console.log("An unknown error occurred.")
     };
   }
 };
+export let updateStudent = async (
+  currentState: CurrentState,
+  data: StudenSchema
+) => {
+  try {
+    console.log('data.id', data)
+
+    await prisma.student.update({
+      where: {
+        id: data.id,
+      },
+      data: {
+        username: data.username,
+        name: data.name,
+        surname: data.surname,
+        email: data.email || null,
+        phone: data.phone,
+        address: data.address,
+        img: data.img || null,
+        sex: data.sex,
+        parentId: data.parentId,
+        classId: data.classId,
+        gradeId: data.gradeId,
+        birthday: data.birthday,
+      }
+    })
+    return { success: true, error: false }
+
+  } catch (error: any) {
+    if (error.message) {
+      console.log(error.message);
+    } else if (error.errors) {
+      console.log(error.errors);
+    } else {
+      console.log(error);
+    }
+    return { success: false, error: true }
+
+  }
+
+}
+
+export let deleteStudent = async (
+  currentState: CurrentState,
+  data: FormData
+) => {
+  try {
+    let id = data.get('id') as string
+
+
+    // 
+
+    await prisma.student.delete({
+      where: {
+        id: id
+      }
+    })
+    let client = await clerkClient()
+
+    await client.users.deleteUser(id)
+
+    return { success: true, error: false }
+
+  } catch (error) {
+    return { success: false, error: true }
+  }
+}
+
+export let createExam = async (
+  currentState: CurrentState,
+  data: ExamSchema
+) => {
+  try {
+    await prisma.exam.create({
+      data: {
+        title: data.title,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        lessonId: data.lessonId,
+      }
+    })
+    return { success: true, error: false }
+  } catch (error) {
+    return { success: false, error: true }
+  }
+}

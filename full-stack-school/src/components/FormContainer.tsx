@@ -4,18 +4,18 @@ import { auth } from "@clerk/nextjs/server";
 
 export type FormContainerProps = {
   table:
-    | "teacher"
-    | "student"
-    | "parent"
-    | "subject"
-    | "class"
-    | "lesson"
-    | "exam"
-    | "assignment"
-    | "result"
-    | "attendance"
-    | "event"
-    | "announcement";
+  | "teacher"
+  | "student"
+  | "parent"
+  | "subject"
+  | "class"
+  | "lesson"
+  | "exam"
+  | "assignment"
+  | "result"
+  | "attendance"
+  | "event"
+  | "announcement";
   type: "create" | "update" | "delete";
   data?: any;
   id?: number | string;
@@ -51,34 +51,40 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
         });
         relatedData = { subjects: teacherSubjects };
         break;
- case "student":
-  const studentClass = await prisma.class.findMany({
-select:{id:true,name:true,capacity:true,_count:{select:{students:true}}}
-  })
-  const studentGrade =await prisma.class.findMany({
-    select:{id:true,capacity:true}
-  })
-  const studentParent =await prisma.parent.findMany({
-    select:{id:true,name:true}
-  })
-  relatedData={classes:studentClass,grade:studentGrade,parents:studentParent}
+      case "student":
+        const studentClass = await prisma.class.findMany({
+          select: { id: true, name: true, capacity: true, _count: { select: { students: true } } }
+        })
+        const studentGrade = await prisma.class.findMany({
+          select: { id: true, capacity: true }
+        })
+        const studentParent = await prisma.parent.findMany({
+          select: { id: true, name: true }
+        })
+        relatedData = { classes: studentClass, grade: studentGrade, parents: studentParent }
         break;
-     
+      case "exam":
+        const examLessons = await prisma.lesson.findMany({
+          where: {
+            ...(role === "teacher" ? { teacherId: currentUserId! } : {}),
+          },
+          select: { id: true, name: true },
+        });
+        relatedData = { lessons: examLessons };
       default:
         break;
     }
   }
 
   return (
-    <div className="">
-      <FormModal
-        table={table}
-        type={type}
-        data={data}
-        id={id}
-        relatedData={relatedData}
-      />
-    </div>
+
+    <FormModal
+      table={table}
+      type={type}
+      data={data}
+      id={id}
+      relatedData={relatedData}
+    />
   );
 };
 

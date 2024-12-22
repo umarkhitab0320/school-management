@@ -3,7 +3,7 @@
 import {
   deleteClass,
   // deleteExam,
-  // deleteStudent,
+  deleteStudent,
   deleteSubject,
   deleteTeacher,
 } from "@/lib/actions";
@@ -14,12 +14,13 @@ import { Dispatch, SetStateAction, useActionState, useEffect, useState } from "r
 import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
 import StudentForm from "./forms/StudentForm";
+import ExamForm from "./forms/ExamForm";
 
 const deleteActionMap = {
   subject: deleteSubject,
   class: deleteClass,
   teacher: deleteTeacher,
-  student:  deleteTeacher,
+  student:   deleteStudent,
   exam:  deleteTeacher,
 // TODO: OTHER DELETE ACTIONS
   parent: deleteSubject,
@@ -89,6 +90,14 @@ const forms: {
       relatedData={relatedData}
     />
   ),
+  exam: (setOpen, type, data, relatedData) => (
+    <ExamForm
+    setOpen={setOpen}
+    type={type}
+    data={data}
+      relatedData={relatedData}
+    />
+  )
 
 
 };
@@ -111,7 +120,7 @@ const FormModal = ({
   const [open, setOpen] = useState(false);
 
   const Form = () => {
-    const [state, formAction] = useActionState(deleteActionMap[table], {
+    const [state, formAction,isLoading] = useActionState(deleteActionMap[table], {
       success: false,
       error: false,
     });
@@ -128,12 +137,12 @@ const FormModal = ({
 
     return type === "delete" && id ? (
       <form action={formAction} className="p-4 flex flex-col gap-4">
-        <input type="text | number" name="id" value={id} hidden />
+        <input type="text | number" readOnly name="id" value={id} hidden />
         <span className="text-center font-medium">
           All data will be lost. Are you sure you want to delete this {table}?
         </span>
         <button className="bg-red-700 text-white py-2 px-4 rounded-md border-none w-max self-center">
-          Delete
+          {isLoading?"loading...": "Delete"}
         </button>
       </form>
     ) : type === "create" || type === "update" ? (
@@ -146,10 +155,12 @@ const FormModal = ({
   return (
     <>
       <button
-        className={`${size} flex items-center justify-center rounded-full ${bgColor}`}
+        className={`${size} flex items-center justify-center p-1 rounded-full ${bgColor}`}
         onClick={() => setOpen(true)}
       >
-        <Image src={`/${type}.png`} alt="" width={16} height={16} />
+        <Image title={type==="create"? "create":"delete"} src={`/${type}.png`} 
+        className={`${type==="update" ? 'bg-blue-600 w-full h-full p-1 rounded-sm':""}`} 
+        alt="" width={44} height={44} />
       </button>
       {open && (
         <div className="w-screen h-screen absolute left-0 top-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">

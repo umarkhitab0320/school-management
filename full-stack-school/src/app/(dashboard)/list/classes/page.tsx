@@ -16,9 +16,8 @@ const ClassListPage = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
 
-const { sessionClaims } = auth();
-const role = (sessionClaims?.metadata as { role?: string })?.role;
-
+const { sessionClaims } =await auth();
+const role = (sessionClaims?.metaData as { role?: string })?.role;
 
 const columns = [
   {
@@ -74,7 +73,7 @@ const renderRow = (item: ClassList) => (
   </tr>
 );
 
-  const { page, ...queryParams } = searchParams;
+  const { page, ...queryParams } = await searchParams;
 
   const p = page ? parseInt(page) : 1;
 

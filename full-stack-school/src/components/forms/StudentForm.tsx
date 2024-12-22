@@ -1,11 +1,12 @@
-import React, { Dispatch, SetStateAction, startTransition, useActionState, useEffect } from 'react'
+import React, { Dispatch, SetStateAction, startTransition, useActionState, useEffect, useState } from 'react'
 import InputField from '../InputField'
 import { useForm } from 'react-hook-form'
 import { StudenSchema, studentSchema } from '@/lib/formValidationSchemas'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { createStudent } from '@/lib/actions'
+import { createStudent, updateStudent } from '@/lib/actions'
 import { useRouter } from "next/navigation";
 import { toast } from 'react-toastify'
+import { CldUploadWidget,getCldImageUrl } from 'next-cloudinary'
 
 const StudentForm = (
     {
@@ -30,29 +31,31 @@ const StudentForm = (
         resolver: zodResolver(studentSchema)
     })
     let { classes, grade, parents } = relatedData
-    let [state,formAction]=useActionState(createStudent,{success:false,error:false})
-//  let router=useRouter()
-let router=useRouter()
-    useEffect(()=>{
-if (state.success) {
-    setOpen(false)
-    toast("student has been created! ")
-router.refresh()
-}
-  },[state,setOpen])
+    let [state, formAction, isLoading] = useActionState(type === "create" ? createStudent : updateStudent, { success: false, error: false })
+    //  let router=useRouter()
+    
+    let [img, setImg] = useState<any>()
+   
+    let router = useRouter()
+    useEffect(() => {
+        if (state.success) {
+            setOpen(false)
+            toast(`student has been ${type} created! `)
+            router.refresh()
+        }
+    }, [state, setOpen])
     return (
         <div>
-            <form className="flex flex-col gap-8" 
-            onSubmit={handleSubmit((data) => {
-                console.log('data',data)
-                startTransition(()=>{
-                    formAction(data)
-                })
-            },
-            (error)=>{
-                console.log(error)
-            }
-            )}>
+            <form className="flex flex-col gap-8"
+                onSubmit={handleSubmit((data) => {
+                    startTransition(() => {
+                        formAction({...data, img: img?.secure_url})
+                    })
+                },
+                    (error) => {
+                        console.log(error)
+                    }
+                )}>
                 <h1 className="text-xl font-semibold">
                     {`${type} a Student`}
                 </h1>
@@ -82,8 +85,36 @@ router.refresh()
                     />
                 </div>
                 <h1 className='font-semibold'>student form</h1>
+                <CldUploadWidget
+                        uploadPreset="school"
+                        onSuccess={(result, { widget }) => {
+                            setImg(result.info);
+                            widget.close();
+                        }}
+                    >
+                        {
+                            ({ open }) => {
+                                return (
+                                    <div
+                                        className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
+                                        onClick={() => open()}
+                                    >
+                                        <img src="/upload.png" alt="" width={28} height={28} />
+                                        <span>Upload a photo</span>
+                                    </div>
+                                )
+                            }
+                        }
 
+                    </CldUploadWidget>
+                    {
+                        errors.img?.message &&
+                        <span className="text-red-500">
+                            {errors.img?.message}
+                        </span>
+                    }
                 <div className="flex justify-between flex-wrap gap-4">
+                    
                     <InputField
                         label='firstname'
                         register={register}
@@ -91,6 +122,13 @@ router.refresh()
                         error={errors?.name}
                         name="name"
                     />
+                    {data && <InputField
+                        label='id'
+                        register={register}
+                        defaultValue={data.id}
+                        error={errors?.id}
+                        name="id"
+                    />}
                     <InputField
                         label='lastname'
                         register={register}
@@ -122,7 +160,7 @@ router.refresh()
                     <InputField
                         label='birthday'
                         register={register}
-                        defaultValue={data?.birthday}
+                        defaultValue={data?.birthday.toISOString().split("T")[0]}
                         error={errors?.birthday}
                         name="birthday"
                         type='date'
@@ -221,17 +259,21 @@ router.refresh()
                             </span>
                         }
                     </div>
-
+                    
+                    {/* {
+                        img &&
+                        <img src={getCldImageUrl(img.secure_url)} alt="" />
+                    } */}
                 </div>
                 <button type="submit" className="bg-blue-400 text-white p-2 rounded-md">
-                    {type === "create" ? "Create" : "Update"}
+                    {type === "create" ? "Create" : isLoading ? "loaging..." : "Update"}
                 </button>
-{
-    state.error &&
-    <span className="text-red-500">
-        somthing went wrong
-</span>
-}
+                {
+                    state.error &&
+                    <span className="text-red-500">
+                        somthing went wrong
+                    </span>
+                }
             </form>
         </div>
     )

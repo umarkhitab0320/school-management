@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { auth } from "@clerk/nextjs/server";
+import LoadingButton from "@/components/LoadingButton";
 
 type StudentList = Student & { class: Class };
 
@@ -20,7 +21,6 @@ const StudentListPage = async ({
 }) => {
   const { sessionClaims } = await auth();
   const role = (sessionClaims?.metaData as { role?: string })?.role ;
-
   const columns = [
     {
       header: "Info",
@@ -80,11 +80,9 @@ const StudentListPage = async ({
       <td className="hidden md:table-cell">{item.address}</td>
       <td>
         <div className="flex items-center gap-2">
-          <Link href={`/list/students/${item.id}`}>
-            <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
-              <Image src="/view.png" alt="" width={16} height={16} />
-            </button>
-          </Link>
+        {/* <Link title="view info" href={`/list/students/${item.id}`} passHref> */}
+          <LoadingButton href={`/list/students/${item.id}`} imgSrc="/view.png" />
+        {/* </Link> */}
           {role === "admin" && (
            
             <FormContainer table="student" type="delete" id={item.id} />
@@ -152,9 +150,7 @@ const StudentListPage = async ({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              //   <Image src="/plus.png" alt="" width={14} height={14} />
-              // </button>
+           
               <FormContainer table="student" type="create" />
             )}
           </div>

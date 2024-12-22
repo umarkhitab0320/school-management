@@ -4,15 +4,17 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Class, Exam, Prisma, Subject, Teacher } from "@prisma/client";
+import { Class, Exam, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 import { auth } from "@clerk/nextjs/server";
 
-type ExamList = Exam & {
+type ExamList = Exam 
+& {
   lesson: {
-    subject: Subject;
-    class: Class;
-    teacher: Teacher;
+    lesson: Lesson
+    // subject: Subject;
+    // class: Class;
+    // teacher: Teacher;
   };
 };
 
@@ -22,28 +24,28 @@ const ExamListPage = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
 
-const { userId, sessionClaims } = auth();
-const role = (sessionClaims?.metadata as { role?: string })?.role;
+const { userId, sessionClaims } =await auth();
+const role = (sessionClaims?.metaData as { role?: string })?.role;
 const currentUserId = userId;
 
 
 const columns = [
   {
-    header: "Subject Name",
-    accessor: "name",
+    header: "title",
+    accessor: "title",
   },
   {
-    header: "Class",
-    accessor: "class",
+    header: "Start Time",
+    accessor: "exam",
   },
   {
-    header: "Teacher",
+    header: "End Time",
     accessor: "teacher",
     className: "hidden md:table-cell",
   },
   {
-    header: "Date",
-    accessor: "date",
+    header: "Lesson",
+    accessor: "lesson",
     className: "hidden md:table-cell",
   },
   ...(role === "admin" || role === "teacher"
@@ -61,14 +63,17 @@ const renderRow = (item: ExamList) => (
     key={item.id}
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
   >
-    <td className="flex items-center gap-4 p-4">{item.lesson.subject.name}</td>
-    <td>{item.lesson.class.name}</td>
-    <td className="hidden md:table-cell">
-      {item.lesson.teacher.name + " " + item.lesson.teacher.surname}
-    </td>
+    <td className="flex items-center gap-4 p-4">{item.title}</td>
+    
     <td className="hidden md:table-cell">
       {new Intl.DateTimeFormat("en-US").format(item.startTime)}
     </td>
+    <td className="hidden md:table-cell">
+      {new Intl.DateTimeFormat("en-US").format(item.endTime)}
+    </td>
+    {/* <td>
+      {item.lesson.lesson.name}
+    </td> */}
     <td>
       <div className="flex items-center gap-2">
         {(role === "admin" || role === "teacher") && (

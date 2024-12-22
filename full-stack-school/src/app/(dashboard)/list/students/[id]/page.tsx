@@ -15,7 +15,8 @@ const SingleStudentPage = async (
   { params: { id } }: {
     params: { id: string }
   }) => {
-
+let {sessionClaims}=await auth()
+let role =( sessionClaims?.metaData as {role:string} ).role
   let student: (Student & { class: (Class & { _count: { lessons: number } }) }) | null = await prisma.student.findUnique({
     where: { id: id },
     include: {
@@ -45,9 +46,11 @@ const SingleStudentPage = async (
                 <h1 className="text-xl font-semibold">
                   {student?.name}
                 </h1>
-                {/* {role === "admin" && ( */}
-                {/* <FormContainer table="student" type="update" data={student} /> */}
-                {/* )} */}
+                {role === "admin" && ( 
+                 <FormContainer table="student" type="update" data={student} 
+                 />
+                )
+  }
               </div>
               <p className="text-sm text-gray-500">
                 Lorem ipsum, dolor sit amet consectetur adipisicing elit.
